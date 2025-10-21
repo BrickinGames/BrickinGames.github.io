@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BrickinGames — Server Status</title>
+  <style>
+    :root{
+      --bg1:#0f172a; --bg2:#0b1220;
+      --card:#0b1226; --muted:#94a3b8;
+      --online:#10b981; --offline:#ef4444;
+      --glass: rgba(255,255,255,0.04);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    /* animated gradient background */
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: radial-gradient(1000px 600px at 10% 10%, rgba(16,24,40,0.6), transparent),
+                  linear-gradient(120deg, var(--bg1), var(--bg2));
+      color: #e6eef8;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:32px;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:980px;
+      border-radius:16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+      padding:28px;
+      backdrop-filter: blur(6px) saturate(120%);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+
+    header{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      margin-bottom:18px;
+    }
+
+    .logo {
+      width:56px; height:56px; border-radius:10px;
+      background: linear-gradient(135deg,#111827 0%, #0ea5a9 100%);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:20px; color:white;
+      box-shadow: 0 6px 18px rgba(2,6,23,0.6), inset 0 -6px 18px rgba(255,255,255,0.03);
+    }
+
+    h1{ margin:0; font-size:20px; letter-spacing:0.2px; }
+    p.lead { margin:2px 0 0 0; color:var(--muted); font-size:13px; }
+
+    .grid {
+      display:grid;
+      grid-template-columns: 1fr 340px;
+      gap:18px;
+      margin-top:18px;
+      align-items:start;
+    }
+
+    /* left column: server list */
+    .servers {
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      padding:18px;
+      border-radius:12px;
+    }
+
+    .server {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px;
+      border-radius:10px;
+      margin-bottom:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border:1px solid rgba(255,255,255,0.02);
+    }
+
+    .server .meta { display:flex; gap:12px; align-items:center; }
+    .favicon {
+      width:44px; height:44px; border-radius:8px;
+      background:var(--glass);
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; color:#fff;
+    }
+    .name { font-weight:600; font-size:15px; }
+    .desc { color:var(--muted); font-size:13px; margin-top:4px; }
+
+    .status {
+      display:flex; flex-direction:column; align-items:flex-end; gap:6px;
+      min-width:120px;
+    }
+    .badge {
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:600;
+      font-size:13px;
+      color: #061018;
+      display:inline-block;
+    }
+    .online { background: linear-gradient(90deg, rgba(16,185,129,0.12), rgba(16,185,129,0.08)); border:1px solid rgba(16,185,129,0.18); color:var(--online); }
+    .offline { background: linear-gradient(90deg, rgba(239,68,68,0.07), rgba(239,68,68,0.04)); border:1px solid rgba(239,68,68,0.12); color:var(--offline); }
+
+    .small { font-size:12px; color:var(--muted); }
+
+    /* right column: details panel */
+    .panel {
+      padding:18px; border-radius:12px; background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .panel h3 { margin:0 0 8px 0; }
+    .panel p { color:var(--muted); font-size:14px; margin-top:6px; }
+
+    .linkbtn {
+      display:inline-block;
+      margin-top:12px;
+      padding:10px 14px;
+      border-radius:10px;
+      font-weight:700;
+      text-decoration:none;
+      color:#042f2a;
+      background: linear-gradient(90deg,#7efc9a,#10b981);
+      box-shadow: 0 8px 20px rgba(16,185,129,0.12);
+    }
+
+    footer { margin-top:16px; color:var(--muted); font-size:12px; text-align:right; }
+
+    @media (max-width:880px){
+      .grid { grid-template-columns:1fr; }
+      .status { align-items:flex-start; min-width:unset; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap" role="main" aria-labelledby="title">
+    <header>
+      <div class="logo" aria-hidden="true">BG</div>
+      <div>
+        <h1 id="title">BrickinGames — Server Status</h1>
+        <p class="lead">Only the List Page is currently reachable. Other services are offline.</p>
+      </div>
+    </header>
+
+    <section class="grid" aria-live="polite">
+      <div class="servers" aria-label="Servers list">
+        <!-- Online server (the only one) -->
+        <div class="server" id="list-page">
+          <div class="meta">
+            <div class="favicon">L</div>
+            <div>
+              <div class="name">List Page</div>
+              <div class="desc">Public GitHub Pages listing — the only page online.</div>
+            </div>
+          </div>
+          <div class="status">
+            <div class="badge online">ONLINE</div>
+            <div class="small">Updated: <span id="time-online"></span></div>
+          </div>
+        </div>
+
+        <!-- Other typical services (offline) -->
+        <div class="server">
+          <div class="meta">
+            <div class="favicon">API</div>
+            <div>
+              <div class="name">API</div>
+              <div class="desc">Game API endpoints</div>
+            </div>
+          </div>
+          <div class="status">
+            <div class="badge offline">HAVEN'T CREATED</div>
+            <div class="small">Last seen: —</div>
+          </div>
+        </div>
+
+        <div class="server">
+          <div class="meta">
+            <div class="favicon">DB</div>
+            <div>
+              <div class="name">Database</div>
+              <div class="desc">Player & score database</div>
+            </div>
+          </div>
+          <div class="status">
+            <div class="badge offline">HAVEN'T CREATED</div>
+            <div class="small">Last seen: —</div>
+          </div>
+        </div>
+
+        <div class="server">
+          <div class="meta">
+            <div class="favicon">WWW</div>
+            <div>
+              <div class="name">Website (Other pages)</div>
+              <div class="desc">Other GitHub Pages routes or site assets</div>
+            </div>
+          </div>
+          <div class="status">
+            <div class="badge offline">HAVEN'T CREATED</div>
+            <div class="small">Last seen: —</div>
+          </div>
+        </div>
+
+      </div>
+
+      <aside class="panel" aria-label="Details">
+        <h3>What is online</h3>
+        <p>The only reachable resource is the <strong>List Page</strong>. Click the button below to open it.</p>
+
+        <!-- Replace the href with your actual list page if different -->
+        <a class="linkbtn" href="https://brickingames.github.io" target="_blank" rel="noopener noreferrer">Open List Page</a>
+
+        <h3 style="margin-top:16px;">Notes</h3>
+        <p>If you want a live status page (auto-ping, incident history, RSS), I can add a tiny script that periodically checks and updates the badges — or connect it to an uptime service.</p>
+
+        <footer>Status snapshot • <span id="snapshot-time"></span></footer>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    // Put current timestamp in the UI (human friendly)
+    function fmtDate(d){
+      const pad = n=>String(n).padStart(2,'0');
+      return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+    }
+    const now = new Date();
+    document.getElementById('time-online').textContent = fmtDate(now);
+    document.getElementById('snapshot-time').textContent = fmtDate(now);
+
+    // Optional: quick customization hook
+    // If your List Page is at a different URL, change the href above or:
+    // document.querySelector('.linkbtn').href = 'https://brickingames.github.io/project-userJakelioanmae.html';
+  </script>
+</body>
+</html>
